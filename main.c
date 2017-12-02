@@ -170,6 +170,7 @@ void initialize(void) {
     // Initialize UART
     init_uart();
     init_LEDs();
+    init_switches();
     init_motor();
     init_servo();
     init_camera();

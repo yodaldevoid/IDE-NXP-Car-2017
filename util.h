@@ -14,11 +14,18 @@
 // Port B
 #define LED_BLUE    21
 
+// Port c
+#define SW2 6
+// Port A
+#define SW3 4
+
 #define SW2_IN      (!(PTC->PDIR & (1 << 6)))
 #define SW3_IN      (!(PTA->PDIR & (1 << 4)))
 
 void delay(int millis);
 void init_LEDs(void);
 void LED_disable(void);
+
+void init_switches(void);
 
 #endif /* __UTIL_H */

@@ -15,7 +15,7 @@ void init_LEDs(void) {
     SIM->SCGC5 |= SIM_SCGC5_PORTB_MASK |
                   SIM_SCGC5_PORTE_MASK;
 
-    // Configure mux for Outputs
+    // Configure mux for GPIOs
     PORTB->PCR[LED_BLUE] = PORT_PCR_MUX(1);
     PORTB->PCR[LED_RED] = PORT_PCR_MUX(1);
     PORTE->PCR[LED_GREEN] = PORT_PCR_MUX(1);
@@ -34,4 +34,20 @@ void LED_disable(void) {
     PTB->PSOR |= (1 << LED_BLUE);
     PTB->PSOR |= (1 << LED_RED);
     PTE->PSOR |= (1 << LED_GREEN);
+}
+
+void init_switches(void) {
+    SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK |
+                  SIM_SCGC5_PORTC_MASK;
+
+    // Configure mux for GPIOs
+    PORTC->PCR[SW2] = PORT_PCR_MUX(1);
+    PORTA->PCR[SW3] = PORT_PCR_MUX(1);
+
+    // Switch to input mode
+    PTC->PDDR &= ~(1 << SW2);
+    PTA->PDDR &= ~(1 << SW3);
+
+    // Turn off the LEDs
+    LED_disable();
 }
