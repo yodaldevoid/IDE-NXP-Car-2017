@@ -11,6 +11,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 
 #include "MK64F12.h"
 #include "util.h"
@@ -20,7 +21,10 @@
 #include "camera.h"
 #include "PID.h"
 
-#define FILTER_THRESHOLD 3500
+#define FILTER_THRESHOLD 3250 //3500
+
+#define FAST_SPEED 45
+#define SLOW_SPEED 35
 
 void initialize(void);
 
@@ -31,9 +35,12 @@ int main(void) {
     int filtered[128];
     int center;
     PID servoPID;
+    PID speedPID;
     double servoCorrection;
+    double speed_correction;
+    bool is_turning;
+    int wanted, assumed;
     char str[100];
-
     int left, right;
 
 #ifdef DEBUG_CAM_DATA
@@ -44,11 +51,13 @@ int main(void) {
     initialize();
 
     PID_init(&servoPID, 0.5, 0.1, 0.25);
-
-    set_motor_duty(35);
+    PID_init(&speedPID, 0.5, 0.1, 0.25);
     set_servo_duty(SERVO_DUTY_CENTER);
 
     center = 63;
+
+    is_turning = false;
+    assumed = 0;
 
     // Wait for switch to be pressed to go
     while(!SW3_IN) {};
@@ -75,17 +84,33 @@ int main(void) {
                 set_servo_duty(SERVO_DUTY_CENTER - 1.0);
                 PTB->PCOR |= (1 << LED_BLUE);
                 PTB->PSOR |= (1 << LED_RED);
+                is_turning = true;
             } else if(center < 61) {
                 // center too far to left, turn right
                 set_servo_duty(SERVO_DUTY_CENTER + 1.0);
                 PTB->PCOR |= (1 << LED_RED);
                 PTB->PSOR |= (1 << LED_BLUE);
+                is_turning = true;
             } else {
                 // just go straight
                 set_servo_duty(SERVO_DUTY_CENTER);
                 PTB->PSOR |= (1 << LED_RED);
                 PTB->PSOR |= (1 << LED_RED);
+                is_turning = false;
             }
+#endif
+
+            if(is_turning) {
+                wanted = SLOW_SPEED;
+            } else {
+                wanted = FAST_SPEED;
+            }
+#if 1
+            speed_correction = PID_step(&speedPID, wanted - assumed);
+            assumed = CLAMP(assumed + speed_correction, 0, 100);
+            set_motor_duty(assumed);
+#else
+            set_motor_duty(wanted);
 #endif
         }
 
