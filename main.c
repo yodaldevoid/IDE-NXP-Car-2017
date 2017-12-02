@@ -25,7 +25,8 @@
 
 #define FAST_SPEED 45
 #define SLOW_SPEED 35
-
+#define LEFT_TURN 66 //66 is good for testing
+#define RIGHT_TURN 61 //61 is good for testing
 void initialize(void);
 
 void filter_camera(uint16_t raw[], int filtered[]);
@@ -97,13 +98,13 @@ int main(void) {
             }
             set_servo_duty(SERVO_DUTY_CENTER + clamped_correction);
 #else
-            if(center > 66) {
+            if(center > LEFT_TURN) {
                 // center too far to right, turn left
                 set_servo_duty(SERVO_DUTY_CENTER - 1.0);
                 PTB->PCOR |= (1 << LED_BLUE);
                 PTB->PSOR |= (1 << LED_RED);
                 is_turning = true;
-            } else if(center < 61) {
+            } else if(center < RIGHT_TURN) {
                 // center too far to left, turn right
                 set_servo_duty(SERVO_DUTY_CENTER + 1.0);
                 PTB->PCOR |= (1 << LED_RED);
