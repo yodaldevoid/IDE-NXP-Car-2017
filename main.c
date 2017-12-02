@@ -36,7 +36,7 @@ int main(void) {
     int center;
     PID servoPID;
     PID speedPID;
-    double servoCorrection;
+    double servo_correction;
     double speed_correction;
     bool is_turning;
     int wanted, assumed;
@@ -68,16 +68,34 @@ int main(void) {
             filter_camera(line, filtered);
             // Zero out the edges after filtering?
             center = find_center(filtered, center, &left, &right);
-            servoCorrection = PID_step(&servoPID, 63.5 - center);
+
+            servo_correction = PID_step(&servoPID, 63.5 - center);
 
 #ifndef DEBUG_CAM_DATA
-            sprintf(str, "%i %i %i\r\n", center, left, right);
-            //sprintf(str, "%i\n\r", (int32_t) (servoCorrection*100.0));
+            //sprintf(str, "%i %i %i\r\n", center, left, right);
+            sprintf(str, "%d\n\r", (int) (100* servo_correction));
             uart_put(str);
 #endif
 
 #if 0
-            set_servo_duty(SERVO_DUTY_CENTER + CLAMP(servoCorrection/10.0, -1.0, 1.0));
+            double clamped_correction = CLAMP(servo_correction/10.0, -1.0, 1.0);
+            if(clamped_correction < -0.05) {
+                // center too far to right, turn left
+                PTB->PCOR |= (1 << LED_BLUE);
+                PTB->PSOR |= (1 << LED_RED);
+                is_turning = true;
+            } else if(clamped_correction > 0.05) {
+                // center too far to left, turn right
+                PTB->PCOR |= (1 << LED_RED);
+                PTB->PSOR |= (1 << LED_BLUE);
+                is_turning = true;
+            } else {
+                // just go straight
+                PTB->PSOR |= (1 << LED_RED);
+                PTB->PSOR |= (1 << LED_RED);
+                is_turning = false;
+            }
+            set_servo_duty(SERVO_DUTY_CENTER + clamped_correction);
 #else
             if(center > 66) {
                 // center too far to right, turn left
