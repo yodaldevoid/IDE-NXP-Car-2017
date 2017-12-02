@@ -49,7 +49,10 @@ int main(void) {
     set_servo_duty(SERVO_DUTY_CENTER);
 
     center = 63;
-    
+
+    // Wait for switch to be pressed to go
+    while(!SW3_IN) {};
+
     while(1) {
         if(camReadDone) {
             camReadDone = 0;
