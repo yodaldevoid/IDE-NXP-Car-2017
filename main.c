@@ -74,8 +74,8 @@ int main(void) {
 
 #ifndef DEBUG_CAM_DATA
             //sprintf(str, "%i %i %i\r\n", center, left, right);
-            sprintf(str, "%d\n\r", (int) (100* servo_correction));
-            uart_put(str);
+            //sprintf(str, "%d\n\r", (int) (100* servo_correction));
+            //uart_put(str);
 #endif
 
 #if 0
@@ -127,6 +127,8 @@ int main(void) {
 #if 1
             speed_correction = PID_step(&speedPID, wanted - assumed);
             assumed = CLAMP(assumed + speed_correction, 0, 100);
+            sprintf(str, "\n SpeedCorrection:%d Assumed: %d,\n\r", (int) (speed_correction*100), assumed);
+            uart_put(str);
             set_motor_duty(assumed);
 #else
             set_motor_duty(wanted);
