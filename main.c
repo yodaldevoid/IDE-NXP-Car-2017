@@ -40,6 +40,7 @@ int main(void) {
     double servo_correction;
     double speed_correction;
     bool is_turning;
+	bool turning_left;
     int wanted, assumed;
     char str[100];
     int left, right;
@@ -58,6 +59,7 @@ int main(void) {
     center = 63;
 
     is_turning = false;
+	turning_left = false;
     assumed = 0;
 
     // Wait for switch to be pressed to go
@@ -104,12 +106,14 @@ int main(void) {
                 PTB->PCOR |= (1 << LED_BLUE);
                 PTB->PSOR |= (1 << LED_RED);
                 is_turning = true;
+				turning_left = true;
             } else if(center < RIGHT_TURN) {
                 // center too far to left, turn right
                 set_servo_duty(SERVO_DUTY_CENTER + 1.0);
                 PTB->PCOR |= (1 << LED_RED);
                 PTB->PSOR |= (1 << LED_BLUE);
                 is_turning = true;
+				turning_left = false;
             } else {
                 // just go straight
                 set_servo_duty(SERVO_DUTY_CENTER);
@@ -129,7 +133,15 @@ int main(void) {
             assumed = CLAMP(assumed + speed_correction, 0, 100);
             sprintf(str, "\n SpeedCorrection:%d Assumed: %d,\n\r", (int) (speed_correction*100), assumed);
             uart_put(str);
-            set_motor_duty(assumed);
+			if(is_turning && turning_left){
+				set_motor_sep_duty(assumed - 2, assumed);
+			}
+			else if(is_turning && !turning_left){
+				set_motor_sep_duty(assumed, assumed - 2);
+			}
+			else{
+				set_motor_duty(assumed);            
+			}
 #else
             set_motor_duty(wanted);
 #endif
