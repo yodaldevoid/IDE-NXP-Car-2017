@@ -30,6 +30,15 @@ void set_motor_duty(unsigned int dutyCycle) {
     FTM0_C3V = mod;
     FTM0_C2V = mod;
 }
+void set_motor_sep_duty(unsigned int leftDutyCycle, unsigned int rightDutyCycle){
+	// Calculate the new cutoff value
+	uint16_t leftMod = (uint16_t) (((CLOCK/MOTOR_FREQ) * leftDutyCycle) / 100);
+	uint16_t rightMod = (uint16_t) (((CLOCK/MOTOR_FREQ) * rightDutyCycle) / 100);
+	
+	// Set outputs
+	FTM0_C3V = leftMod;
+	FTM0_C2V = rightMod;
+}
 
 /*
  * Initialize the FlexTimer for PWM
